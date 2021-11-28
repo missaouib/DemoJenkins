@@ -22,3 +22,5 @@ Ubuntu 18.04 will require to install nginx-extras. This is done using the comman
 ````
 sudo apt-get install nginx-extras
 ````
+
+## Changing the default ONLYOFFICE Docs port
