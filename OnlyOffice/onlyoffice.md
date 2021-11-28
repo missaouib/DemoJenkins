@@ -13,3 +13,7 @@ sudo -i -u postgres psql -c "CREATE DATABASE onlyoffice;"
 sudo -i -u postgres psql -c "CREATE USER onlyoffice WITH password 'onlyoffice';"
 sudo -i -u postgres psql -c "GRANT ALL privileges ON DATABASE onlyoffice TO onlyoffice;"
 ````
+## Installing rabbitmq:
+````
+sudo apt-get install rabbitmq-server
+````
