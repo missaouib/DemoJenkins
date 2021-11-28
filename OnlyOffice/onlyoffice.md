@@ -17,3 +17,8 @@ sudo -i -u postgres psql -c "GRANT ALL privileges ON DATABASE onlyoffice TO only
 ````
 sudo apt-get install rabbitmq-server
 ````
+
+Ubuntu 18.04 will require to install nginx-extras. This is done using the command:
+````
+sudo apt-get install nginx-extras
+````
