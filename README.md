@@ -1,1 +1,1 @@
-# DemoJenkins
+# Hướng dẫn cài đặt các ứng dụng
