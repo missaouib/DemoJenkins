@@ -1,0 +1,8 @@
+sudo cp /home/ubuntu/build/web-apps/deploy/web-apps/apps/documenteditor/main/app.js /var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/main/
+sudo cp /home/ubuntu/build/web-apps/deploy/web-apps/apps/documenteditor/main/resources/css/app.css /var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/main/resources/css/
+
+sudo cp /home/ubuntu/build/web-apps/deploy/web-apps/apps/spreadsheeteditor/main/app.js /var/www/onlyoffice/documentserver/web-apps/apps/spreadsheeteditor/main/
+sudo cp /home/ubuntu/build/web-apps/deploy/web-apps/apps/spreadsheeteditor/main/resources/css/app.css /var/www/onlyoffice/documentserver/web-apps/apps/spreadsheeteditor/main/resources/css/
+
+sudo cp /home/ubuntu/build/web-apps/deploy/web-apps/apps/presentationeditor/main/app.js /var/www/onlyoffice/documentserver/web-apps/apps/presentationeditor/main/
+sudo cp /home/ubuntu/build/web-apps/deploy/web-apps/apps/presentationeditor/main/resources/css/app.css /var/www/onlyoffice/documentserver/web-apps/apps/presentationeditor/main/resources/css/

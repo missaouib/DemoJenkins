@@ -1,0 +1,16 @@
+#!/bin/bash
+
+sudo apt update
+
+# Add Kubernetes Signing Key
+
+
+sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+# Add Software Repositories
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+# Kubernetes Installation Tools
+sudo apt update
+sudo apt install kubeadm kubelet kubectl -y
+sudo apt-mark hold kubeadm kubelet kubectl

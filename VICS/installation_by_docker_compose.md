@@ -40,7 +40,7 @@ services:
     volumes:
       - db:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_ROOT_PASSWORD=vics
     env_file:
       - db.env
     networks:
@@ -97,7 +97,7 @@ services:
 You also need to create an db.env file to store the necessary information for docker-compose.
 
 ```
-MYSQL_PASSWOR=
+MYSQL_PASSWOR=vics
 MYSQL_DATABASE=vics
 MYSQL_USER=vics
 ```

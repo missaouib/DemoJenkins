@@ -392,5 +392,5 @@ docker build -t <yourreponame>:<version> .
 If your are behind proxy, use other command:
 
 ```
-docker build -t <yourreponame>:<version> --build-arg HTTP_PROXY=<yourproxy> --build-arg HTTPS_PROXY=<yourproxy> .
+docker build -t vics:1.0 --build-arg HTTP_PROXY=http://10.61.11.42:3128 --build-arg HTTPS_PROXY=http://10.61.11.42:3128 .
 ```

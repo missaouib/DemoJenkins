@@ -1,0 +1,28 @@
+# Ansible Master
+
+Tao key-gen
+````
+ssh-keygen -t rsa -b 4096
+````
+
+Kiem tra ket noi
+````
+ping -c 3 192.168.0.3
+````
+
+Kiem tra SSH
+````
+ssh ansible@192.168.0.3
+
+ssh-copy-id -i ~/.ssh/ansible-slave ansible@192.168.0.3
+````
+
+Cai python3, pip
+````
+sudo apt install python3
+sudo apt install python3-pip
+````
+
+
+pip3 install --proxy=http://10.61.11.42:3128 --user ansible paramiko
+````
