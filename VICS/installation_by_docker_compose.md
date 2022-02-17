@@ -217,6 +217,8 @@ tar xvf v7.0.2.tar.gz
 rm *.tar.gz
 ```
 
+
+
 #### Edit config.php
 Going into config folder and download Onlyoffice app
 
