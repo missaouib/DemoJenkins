@@ -1,0 +1,12 @@
+cd viettel-cwm-admin-ui
+npm install
+node --max_old_space_size=4096 node_modules/@angular/cli/bin/ng build --prod --aot
+cd dist
+mkdir viettel-cwm-admin-ui-${PROJECT_VERSION}_${BUILD_NUMBER}
+mv public viettel-cwm-admin-ui-${PROJECT_VERSION}_${BUILD_NUMBER}/
+tar czf viettel-cwm-admin-ui-${PROJECT_VERSION}_${BUILD_NUMBER}.tar.gz viettel-cwm-admin-ui-${PROJECT_VERSION}_${BUILD_NUMBER}
+cd ../..
+
+mvn clean versions:set -DnewVersion=${PROJECT_VERSION} -Dparent.version=${PROJECT_VERSION}
+mvn versions:update-child-modules
+mvn clean package -DbuildNumber=${BUILD_NUMBER} -DscmRevision=`git rev-parse HEAD`

@@ -1,0 +1,25 @@
+pipeline{
+    agent{
+        label "slave_43"
+    }
+    stages{
+        stage("check source change"){
+            steps{
+                sh 'chmod a+x build.sh'
+                script {
+                    check_source = sh(script:"./build.sh Check", returnStdout: true).trim()
+                    echo "change folder EInvoiceGW flag: ${check_source}"
+                }
+            }
+        }
+        stage("Build"){
+        steps{
+                  script{
+                      if(check_services_chat == "change file war or yml"){
+                          build job:'DMSZott_web'
+                      }
+                  }
+              }
+	      } 
+	}
+}

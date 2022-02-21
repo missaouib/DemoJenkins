@@ -1,0 +1,30 @@
+- hosts: 10.255.41.47
+  remote_user: sys_vtit
+  tasks:
+  - name: get file build artifact
+    win_get_url:
+     url: http://10.60.156.26:8081/repository/msbuild/{{GROUPID}}/{{GROUPID}}/1.{{VERSION}}/{{GROUPID}}-1.{{VERSION}}.zip
+     dest: E:\TCMR
+  # - name: backup folder code
+  #   win_zip:
+  #    src: E:\Data\Builds\Web Admin\8080
+  #    dest: E:\TCMR\8080_bk_{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}.zip
+  - name: unzip file build to Web admin 8080
+    win_unzip:
+     src: E:\TCMR\{{GROUPID}}-1.{{VERSION}}.zip
+     dest: E:\Data\Builds\Web Admin\8080
+  - name: Copy file web.config to Web Admin 8080
+    win_shell: |
+      xcopy "E:\TCMR\Web.config" "E:\Data\Builds\Web Admin\8080" /Y
+  #- name: unzip file build
+  #  win_unzip:
+  #   src: E:\TCMR\8080_bk_20191025-1734.zip
+  #   dest: E:\Data\Builds\Web Admin\8080
+  - name: deploy app in IIS Server
+    win_iis_website:
+     name: APP_8080
+     state: restarted
+     port: 8080
+     ip: 10.255.41.47
+     application_pool: APP_8080
+     physical_path: E:\Data\Builds\Web Admin\8080

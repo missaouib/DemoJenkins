@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dmdc-frontend
+  labels:
+    app: etc
+    module: dmdc-frontend
+spec:
+  ports:
+  - name: dmdc-frontend-port
+    port: 80
+    protocol: TCP
+    nodePort: 9126
+  selector:
+    app: etc
+    module: dmdc-frontend
+  type: NodePort

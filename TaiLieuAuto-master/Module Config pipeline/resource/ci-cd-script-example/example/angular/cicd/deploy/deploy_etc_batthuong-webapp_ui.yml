@@ -1,0 +1,41 @@
+- hosts: 10.60.156.160
+  tasks:
+  - name: backup folder ROOT
+    shell: |
+      cd /u01/app/BatThuong/front-end/webapps 
+      zip -r ROOT-bk$(date +%Y%m%d%H%M%S).zip ROOT
+
+  - name: get build artifact to tomcat
+    get_url:
+      url: http://10.60.156.26:8081/repository/msbuild/{{groupId}}/{{artifactId}}/1.{{BUILD_NUMBER}}/{{artifactId}}-1.{{BUILD_NUMBER}}.zip
+      dest: /u01/app/BatThuong/front-end/webapps/
+
+  - name: unzip folder ROOT
+    shell: |
+      cd /u01/app/BatThuong/front-end/webapps
+      unzip -o {{artifactId}}-1.{{BUILD_NUMBER}}.zip
+
+  - name: Check running processes tomcat
+    shell: ps -ef | grep 'BatThuong/front-end' | grep -v grep | awk '{print $2}'
+    register: process_tomcat
+
+  - name: Show captured processes
+    debug:
+      var: process_tomcat.stdout
+
+  - name: start tomcat if process stop
+    shell: |
+       cd /u01/app/BatThuong/front-end/bin
+       nohup ./startup.sh &
+    when: process_tomcat.stdout == ""
+
+  - name: wait for application restart to start
+    uri:
+      url: http://{{ansible_default_ipv4.address}}:{{http_app_port}}
+    register: result
+    until: result.status == 200
+    retries: 30
+    delay: 10
+    
+  - name: success message
+    debug: msg="ANSIBLE_DEPLOY_SUCCESS http://{{ansible_default_ipv4.address}}:{{http_app_port}}"

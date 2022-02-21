@@ -1,0 +1,114 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.viettel.mve</groupId>
+	<artifactId>cicd</artifactId>
+	<version>1.0.0</version>
+	<name>cicd</name>
+	<description>cicd</description>
+	
+	<properties>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
+	</properties>
+    <profiles>
+    <!-- For Jacoco Coverage -->
+    <profile>
+      <id>jacoco</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+        <dependencies>
+            <dependency>
+                <groupId>com.viettel.mve</groupId>
+                <artifactId>auth-service</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viettel.mve</groupId>
+                <artifactId>categories-service</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <!-- <dependency>
+                <groupId>com.viettel.mve</groupId>
+                <artifactId>customer-service</artifactId>
+                <version>1.0.0</version>
+            </dependency> -->
+            <dependency>
+                <groupId>com.viettel.mve</groupId>
+                <artifactId>invoice-service</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viettel.mve</groupId>
+                <artifactId>kpilog-service</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <!-- <dependency>
+                <groupId>com.viettel.vte</groupId>
+                <artifactId>leased-line-service</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.viettel.mve</groupId>
+                <artifactId>leased-line-ticket-service</artifactId>
+                <version>1.0.0</version>
+            </dependency> -->
+            <!-- <dependency>
+                <groupId>com.viettel.mve</groupId>
+                <artifactId>media-service</artifactId>
+                <version>1.0.0</version>
+            </dependency> -->
+            <!-- <dependency>
+                <groupId>com.viettel.mve</groupId>
+                <artifactId>mve-eureka-server</artifactId>
+                <version>1.0.0</version>
+            </dependency> -->
+            <!-- <dependency>
+                <groupId>com.viettel.mve</groupId>
+                <artifactId>mve-zuul-server</artifactId>
+                <version>1.0.0</version>
+            </dependency> -->
+            <dependency>
+                <groupId>com.viettel.mve</groupId>
+                <artifactId>notification-service</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <!-- <dependency>
+                <groupId>com.viettel.mve</groupId>
+                <artifactId>payment-service</artifactId>
+                <version>1.0.0</version>
+            </dependency> -->
+            <!-- <dependency>
+                <groupId>com.viettel.mve.webapp</groupId>
+                <artifactId>MyViettelEnterprise</artifactId>
+                <version>1.0.1</version>
+            </dependency> -->
+
+
+        </dependencies>
+        <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>report-aggregate</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>report-aggregate</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <outputDirectory>target/jacoco-aggregate-report</outputDirectory>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+    
+</project>

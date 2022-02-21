@@ -1,0 +1,53 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.viettel.mve</groupId>
+	<artifactId>mve-cicd</artifactId>
+	<version>1.0.1</version>
+	<packaging>pom</packaging>
+
+	<properties>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
+	</properties>
+
+	<repositories>	
+		
+	</repositories>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>${maven-surefire-plugin.version}</version>
+        </dependency>
+    </dependencies>
+	<modules>
+        <module>mve-client</module>
+        <module>mve-common-function</module>
+        
+        
+        <!-- mve service -->
+        <module>auth-service</module>
+        <module>categories-service</module>
+        <!-- <module>customer-service</module> -->
+        <module>invoice-service</module>
+        <module>kpilog-service</module>
+        <!-- <module>leased-line-service</module> -->
+        <!-- <module>leased-line-ticket-service</module> -->
+        <!-- <module>media-service</module> -->
+        <module>mve-config-server</module>
+        <module>mve-eureka-server</module>
+        <!-- <module>mve-webapp</module> -->
+        <module>mve-zuul-server</module>
+        <module>notification-service</module>
+        <!-- <module>payment-service</module> -->
+
+        <!-- mve cicd  -->
+        <module>cicd</module>
+    </modules>
+
+</project>

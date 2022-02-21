@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dmdc-backend
+  labels:
+    app: etc
+    module: dmdc-backend
+spec:
+  selector:
+    matchLabels:
+      app: etc
+      module: dmdc-backend
+  template:
+    metadata:
+      labels:
+        app: etc
+        module: dmdc-backend
+    spec:
+      containers:
+      - image: 10.60.156.72/etc/dmdc-backend:__ETCDMDCBACKENDVERSION__
+        name: dmdc-backend
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: k8s
+        - name: URL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+                name: etc-env-configmap
+                key: URL_DATABASE
+        - name: DMDC_USER
+          valueFrom:
+            configMapKeyRef:
+                name: etc-env-configmap
+                key: DMDC_USER
+        - name: DMDC_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+                name: etc-env-configmap
+                key: DMDC_PASSWORD
+        - name: KEYCLOAK_BASE
+          valueFrom:
+            configMapKeyRef:
+                name: etc-env-configmap
+                key: KEYCLOAK_BASE
+        - name: CRM_SERVICE
+          valueFrom:
+            configMapKeyRef:
+                name: etc-env-configmap
+                key: CRM_SERVICE
+        - name: IM_SERVICE
+          valueFrom:
+            configMapKeyRef:
+                name: etc-env-configmap
+                key: IM_SERVICE
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1.0Gi"
+          limits:
+            cpu: "1500m"
+            memory: "2.0Gi"
+        ports:
+        - containerPort: 8989
+      imagePullSecrets:
+      - name: etc-regcred
+
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: dmdc-backend-hpa
+spec:
+  maxReplicas: 1
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: dmdc-backend
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80

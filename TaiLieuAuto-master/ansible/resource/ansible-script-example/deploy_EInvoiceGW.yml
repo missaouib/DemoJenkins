@@ -1,0 +1,19 @@
+- hosts: ip
+  remote_user: user
+  tasks:
+  - name: stop service EInvoiceGW_Service
+    shell: |
+      cd path
+      ./einvoicegw stop
+  - name: backup file EInvoiceGW_Service.jar
+    shell: |
+      cd /u01/hddt/EInvoiceGW/lib
+      if [ -f "EInvoiceGW_Service.jar" ]; then mv EInvoiceGW_Service.jar EInvoiceGW_Service.jar.bk$(date +%Y%m%d%H%M%S); fi;
+  - name: copy file jar
+    copy:
+      src: "dist/EInvoiceGW_Service.jar"
+      dest: "/u01/hddt/EInvoiceGW/lib/EInvoiceGW_Service.jar"
+  - name: start service EInvoiceGW
+    shell: |
+      cd /u01/hddt/EInvoiceGW/bin
+      ./einvoicegw start

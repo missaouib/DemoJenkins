@@ -1,0 +1,71 @@
+// Config api scan acunetix
+env.ACUNETIX_API_URL="https://10.60.156.3:8443/api/v1"
+env.ACUNETIX_URL="https://10.60.156.3:8443"
+
+// Config Nexus repo chứa các build Artifact
+env.NEXUS_REPO_URL = "10.60.156.26:8081"
+
+
+// Config CredentialID dùng chung cho cả project thay vì sửa trong file groovy
+env.GITLAB_CREDENTIALS_ID="a5eedd9f-332d-4575-9756-c358bbd808eb"
+env.NEXUS_CREDENTIALS_ID=""
+
+// Config Nexus for Repo lib --> Đối với các source code build thư viện dùng chung cho nhiều service
+// phần này bỏ qua đối với các service thông thường và đối với thư viện đánh build SNAPSHOT.
+env.NEXUS_REPO_LIB_URL = "http://10.60.108.23:9001/service/rest/v1"
+env.REPO_NAME = "Nhập repo name chứa file lib được deploy"
+env.MAVEN_GROUP_NAME = "Nhập groupID lib cần xóa"
+env.IDTask="Nhập ID Task run trong Nexus"   //liên hệ P.CNSX tạo cấp ID Task
+env.fileNameRemoveLibs = "Nhập tên file sh xóa lib trên jenkins slave"    //file source remove libs
+
+//env.buildUrlLib --> check job running waiting for job complete
+env.buildUrlLib="http://10.60.156.96:8080/job/ETC_V2/job/CRM/job/Back-end/job/CI_staging/lastBuild"
+
+// config node run CICD
+env.node_slave="slave_43"
+
+// config groupname
+env.groupName="VTM"
+
+//config sonar
+env.MAXIMUM_ALLOWED_BUGS = 0
+env.MAXIMUM_ALLOWED_VUNERABILITIES = 0
+env.MAXIMUM_ALLOWED_CODE_SMELL = 0
+
+// bypass sonar
+env.bypass= 'false'
+
+enableCallMember='false'
+enableBypassSec='true'
+
+env.STAGING_BRANCH = 'master'
+
+env.GITLAB_PROJECT_API_URL="http://10.60.156.11/api/v4/projects/{projectID-Gitlab}"
+
+// link job automation test
+env.automations_test = "http://10.60.156.11/hiennt163/thinghub.git"
+
+// Build prefix
+env.PUSH_BUILD_PREFIX="JENKINS-PUSH"
+env.MR_BUILD_PREFIX="JENKINS-MERGE"
+env.ACCEPT_CLOSE_MR_BUILD_PREFIX="JENKINS-ACCEPT-CLOSE"
+env.ROLLBACK_MAINTAINER_LIST = 'hienptt22'
+
+env.project_maintainer_list = 'hienptt22'
+
+//Auto Test prefix
+env.tagsTest = '-Dtags="function:smockTest"'
+//env.tagsTest = ''
+//env.tagsTest = '-Dtags="feature:login"'
+env.tagsTestUpcode = ''
+
+//lastBuild CI staging  --> cấu hình khi chạy CD
+env.buildUrlCI='http://10.60.156.96:8080/job/thinghub/job/CI_staging/lastBuild'
+
+//send email  -- bỏ qua mail bằng cách comment 2 dòng này
+
+//env.mailTo= "hienptt22@viettel.com.vn"
+//env.mailCC = "hienptt22@viettel.com.vn"
+
+
+

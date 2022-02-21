@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<!-- By default, only the Clean and Build commands use this build script. -->
+<!-- Commands such as Run, Debug, and Test only use this build script if -->
+<!-- the Compile on Save feature is turned off for the project. -->
+<!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
+<!-- in the project's Project Properties dialog box.-->
+
+<project name="Build Automation" basedir="." xmlns:jacoco="antlib:org.jacoco.ant">
+    <description>Builds, tests, and runs Automation.</description>
+	<property file="build_automation.properties"/>
+    <import file="build.xml"/>
+  <target name="init.jacoco" description="Build initialization">
+    <delete dir="${reports.xml.dir}"/>
+    <delete dir="${reports.html.dir}"/>
+    <delete dir="${coverage.html.dir}"/>
+    <mkdir dir="${reports.xml.dir}"/>
+    <mkdir dir="${reports.html.dir}"/>
+    <mkdir dir="${coverage.html.dir}"/>
+    <mkdir dir="${coverage.xml.dir}"/>
+  </target>
+  <target name="jacoco" depends="init.jacoco, compile">
+    <jacoco:instrument destdir="target/classes-instr">
+        <fileset dir="${class.output.dir}" includes="**/*.class"/>
+    </jacoco:instrument>
+    <jacoco:report>
+        <executiondata>
+            <file file="automation/jacoco.exec"/>
+        </executiondata>
+        <structure name="jacoco-sample">
+            <classfiles>
+                <fileset dir="${class.output.dir}"/>
+            </classfiles>
+            <sourcefiles encoding="UTF-8">
+                <fileset dir="${coverage.html.dir}"/>
+            </sourcefiles>
+        </structure>
+        <html destdir="${coverage.html.dir}"/>
+        <xml destfile="${coverage.html.dir}/jacoco.xml" />
+      </jacoco:report>
+  </target>
+  
+  <target name="coverage"
+            depends="jacoco,test"
+            description="build all"/>
+</project>

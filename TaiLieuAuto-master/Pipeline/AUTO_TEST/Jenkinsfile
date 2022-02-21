@@ -1,0 +1,122 @@
+def result = true
+pipeline{
+    agent{
+        label "thuynth9"
+    }
+    stages{
+		stage("check DMS HUU NGHI"){
+            steps{
+				script {
+					check_HN = bat(returnStatus: true , script: '''D:
+					           cd "D:\\automation\\smoketest\\DMS_HuuNghi"
+					           mvn clean verify -Dfile.encoding=UTF-8 -Drun.mode=run -Dibm.create.issue=false''') == 0
+					echo "flag $check_HN"
+					publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'D:/automation/smoketest/DMS_HuuNghi/target/site/serenity', reportFiles: 'index.html', reportName: 'HTML Report/DMS_HuuNghi', reportTitles: 'DMS_HuuNghi'])
+					if (check_HN == false){
+						result = false
+					}
+				}
+			}
+        }
+		stage("check DMS Domesco"){
+			steps{
+				script {
+					check_DMC = bat(returnStatus: true, script: '''D:
+					            cd "D:\\automation\\smoketest\\DMS_Domesco"
+					            mvn clean verify -Dfile.encoding=UTF-8 -Drun.mode=run -Dibm.create.issue=false''') == 0
+					echo "flag DMS_Domesco: $check_DMC"
+					publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'D:/automation/smoketest/DMS_Domesco/target/site/serenity', reportFiles: 'index.html', reportName: 'HTML Report/DMS_Domesco', reportTitles: 'DMS_Domesco'])
+				    if (check_DMC == false){
+						result = false
+					}
+                }
+			}
+		}
+        //add project
+        stage("check DMS_PG"){
+			steps{
+				script {
+					check_PG = bat(returnStatus: true, script: '''D:
+                            cd "D:\\automation\\smoketest\\DMS_PG"
+                            mvn clean verify -Dfile.encoding=UTF-8 -Drun.mode=run -Dibm.create.issue=false''') == 0
+					echo "flag DMS_PG: $check_PG"
+					publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'D:/automation/smoketest/DMS_PG/target/site/serenity', reportFiles: 'index.html', reportName: 'HTML Report/DMS_PG', reportTitles: 'DMS_PG'])
+				    if (check_PG == false){
+						result = false
+					}
+                }
+			}
+		}
+        stage("check DMS_SCC"){
+			steps{
+				script {
+					check_SCC = bat(label: '', returnStatus: true, script: '''D:
+                                cd "D:\\automation\\smoketest\\DMS_SCC"
+                                mvn clean verify -Dfile.encoding=UTF-8 -Drun.mode=run -Dibm.create.issue=false''') == 0
+					echo "flag SCC: $check_SCC"
+					publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'D:/automation/smoketest/DMS_SCC/target/site/serenity', reportFiles: 'index.html', reportName: 'HTML Report/DMS_SCC', reportTitles: 'DMS_SCC'])
+				    if (check_SCC == false){
+						result = false
+					}
+                }
+			}
+		}
+        stage("check DMS_ThienLong"){
+			steps{
+				script {
+					check_TL = bat(returnStatus: true, script: '''D:
+                               cd "D:\\automation\\smoketest\\DMS_ThienLong"
+                               mvn clean verify -Dfile.encoding=UTF-8 -Drun.mode=run -Dibm.create.issue=false''') == 0
+					echo "flag Thien Long: $check_TL"
+					publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'D:/automation/smoketest/DMS_ThienLong/target/site/serenity', reportFiles: 'index.html', reportName: 'HTML Report/DMS_ThienLong', reportTitles: 'DMS_ThienLong'])
+				    if (check_TL == false){
+						result = false
+					}
+                }
+			}
+		}
+        stage("check MyKid"){
+			steps{
+				script {
+					check_MyKid = bat(returnStatus: true, script: '''D:
+                                cd "D:\\automation\\smoketest\\MyKid"
+                                mvn clean verify -Dfile.encoding=UTF-8 -Drun.mode=run -Dibm.create.issue=false''') == 0
+					echo "flag MyKid: $check_MyKid"
+					publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'D:/automation/smoketest/MyKid/target/site/serenity', reportFiles: 'index.html', reportName: 'HTML Report/MyKid', reportTitles: 'MyKid'])
+				    if (check_MyKid == false){
+						result = false
+					}
+                }
+			}
+		}
+        stage("check MyParking"){
+			steps{
+				script {
+					check_MyParking = bat(returnStatus: true, script: '''D:
+                                  cd "D:\\automation\\smoketest\\MyParking"
+                                  mvn clean verify -Dfile.encoding=UTF-8 -Drun.mode=run -Dibm.create.issue=false''') == 0
+					echo "flag MyKid: $check_MyParking"
+					publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'D:/automation/smoketest/MyParking/target/site/serenity', reportFiles: 'index.html', reportName: 'HTML Report/MyParking', reportTitles: 'MyParking'])
+				    if (check_MyParking == false){
+						result = false
+					}
+                }
+			}
+		}
+		stage("check result display"){
+			steps{
+				script {
+					println result
+					if(result == true){
+						currentBuild.result = 'SUCCESS'
+                        currentBuild.result = currentBuild.currentResult
+					} else if (result == false){
+						currentBuild.result = 'FAILURE'
+                        currentBuild.result = currentBuild.currentResult
+					}
+				}
+                println currentBuild.result
+			}
+		}
+	}
+}

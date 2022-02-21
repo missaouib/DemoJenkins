@@ -1,0 +1,17 @@
+- hosts: ip
+  remote_user: user
+  tasks:
+  - name: kill process tomcat_autoDeploy
+    shell: "ps -ef | grep 'apache-tomcat-7-vo' | grep -v grep | awk '{print $2}' | xargs -r kill -9"
+  - name: backup old folder
+    shell: |
+       cd /home/app/VOFFICE_BYT/apache-tomcat-7-vo/
+       cp -R webapps/ROOT/ backup/ROOT_bk$(date +%Y%m%d%H%M%S)
+  - name: Copy file zip thư mục
+    copy:
+     src: "build/ROOT.war"
+     dest: "/home/app/VOFFICE_BYT/apache-tomcat-7-vo/webapps/ROOT.war"
+  - name: start tomcat
+    shell: |
+       cd /home/app/VOFFICE_BYT/apache-tomcat-7-vo/bin
+       nohup ./startup.sh &

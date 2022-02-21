@@ -1,0 +1,51 @@
+pipeline{
+    agent{
+        label "slave_43"
+    }
+    stages{
+        stage("check source change"){
+            steps{
+                sh 'chmod a+x build.sh'
+                script {
+                    check_services_chat = sh(script:"./build.sh services_chat", returnStdout: true).trim()
+                    echo "change folder EInvoiceGW flag: ${check_services_chat}"
+					check_services_facebook = sh(script: "./build.sh services_facebook" , returnStdout: true).trim()
+                    echo "change folder EInvoiceCommon flag: ${check_services_facebook}"
+					check_services_ticket = sh(script: "./build.sh services_ticket" , returnStdout: true).trim()
+                    echo "change folder EInvoiceWeb flag: ${check_services_ticket}"
+                }
+            }
+        }
+        stage("Parallel Builds"){
+            parallel {
+                stage('Build & Deploy services_chat'){
+                    steps{
+                        script{
+                            if(check_services_chat == "change change services-chat"){
+                                build job:'services-chat'
+                            }
+                        }
+                    }
+                }
+                stage('Build services-facebook'){
+                    steps{
+                        script{
+                            if( check_services_facebook == "change services-facebook"){
+                                build job: 'services-facebook'
+                            }
+                        }
+                    }
+                }
+                stage('Build & Deploy services-ticket'){
+                    steps{
+                        script{
+                            if(check_services_ticket == "change services-ticket"){
+                                build job: 'services-ticket'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

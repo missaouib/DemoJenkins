@@ -1,0 +1,17 @@
+- hosts: ip
+  remote_user: user
+  tasks:
+  - name: kill process running
+    shell: ps -ef | grep 'string' | grep -v grep | awk '{print $2}' | xargs -r kill -9
+  - name: Copy file war vào thư mục
+    copy:
+     src: "target/file.war"
+     dest: "path/file.war"
+  - name: Copy file start file vào thu muc
+    copy:
+     src: "start.sh"
+     dest: "path/start.sh"
+  - name: cap quyen thuc thi
+    file: dest=path/start.sh  mode=a+x
+  - name: run file start
+    shell: chdir=path ./start.sh

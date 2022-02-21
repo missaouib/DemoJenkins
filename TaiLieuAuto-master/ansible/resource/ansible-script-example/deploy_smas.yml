@@ -1,0 +1,19 @@
+- hosts: ip
+  remote_user: user
+  tasks:
+  - name: get file build artifact
+    win_get_url:
+     url: http://10.60.156.26:8081/repository/msbuild/SMAS/smas/1.{{VERSION}}/smas-1.{{VERSION}}.zip
+     dest: 
+  - name: unzip file build
+    win_unzip:
+     src: path\smas-1.{{VERSION}}.zip
+     dest: path\
+  - name: deploy app in IIS Server
+    win_iis_website:
+     name: SMAS_01
+     state: started
+     port: port
+     ip: ip
+     application_pool: SMAS_01
+     physical_path: path

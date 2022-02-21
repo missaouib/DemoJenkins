@@ -1,0 +1,29 @@
+- hosts: 10.60.156.213
+  remote_user: app
+  tasks:
+  - name: get file build artifact module web
+    win_get_url:
+     url: http://10.60.156.26:8081/repository/msbuild/{{GROUP_ID}}/{{ARTIFACT_ID}}_SParentWebApp/1.{{VERSION}}/{{ARTIFACT_ID}}_SParentWebApp-1.{{VERSION}}.zip
+     dest: C:\wwwroot\SLLDT\app\
+
+  - name: unzip file build
+    win_unzip:
+     src: C:\wwwroot\SLLDT\app\{{ARTIFACT_ID}}_SParentWebApp-1.{{VERSION}}.zip
+     dest: C:\wwwroot\SLLDT\app\
+
+  - name: get file build artifact module api
+    win_get_url:
+     url: http://10.60.156.26:8081/repository/msbuild/{{GROUP_ID}}/{{ARTIFACT_ID}}_SParent.WebAPI/1.{{VERSION}}/{{ARTIFACT_ID}}_SParent.WebAPI-1.{{VERSION}}.zip
+     dest: C:\wwwroot\SLLDT\api\
+  - name: unzip file build
+    win_unzip:
+     src: C:\wwwroot\SLLDT\api\{{ARTIFACT_ID}}_SParent.WebAPI-1.{{VERSION}}.zip
+     dest: C:\wwwroot\SLLDT\api\
+  - name: deploy app in IIS Server
+    win_iis_website:
+     name: SLLDT
+     state: restarted
+     port: 8092
+     ip: 10.60.156.213
+     application_pool: SLLDT
+     physical_path: C:\wwwroot\SLLDT\wrapper\

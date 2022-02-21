@@ -1,0 +1,1849 @@
+{
+	"info": {
+		"_postman_id": "f28d232d-e9ed-4a6c-82b1-917ab80c60c4",
+		"name": "ETC_DMDC",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "9c52b5f8-eeb1-4e9f-a8fc-94bfbe7fc3dd",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"access_token\");\r",
+							"});\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"\tpm.globals.set(\"access_token\", jsonData.access_token);\r",
+							"    console.log(\"Access_token: \",jsonData.access_token);\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "username",
+							"value": "admin_dmdc",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "123",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "dmdc",
+							"type": "text"
+						},
+						{
+							"key": "client_secret",
+							"value": "c98e9be4-aa0e-404d-8fb7-dd3cc4e2a263",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://10.60.108.172:8482/auth/realms/etc-internal/protocol/openid-connect/token",
+					"protocol": "http",
+					"host": [
+						"10",
+						"60",
+						"108",
+						"172"
+					],
+					"port": "8482",
+					"path": [
+						"auth",
+						"realms",
+						"etc-internal",
+						"protocol",
+						"openid-connect",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getArea",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "752a6778-d759-498c-b619-b7686de26393",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"area_code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"province\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"district\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"precinct\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"provinceShop\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"    }\r",
+							"});\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.globals.set('area_code', jsonData.data[0].area_code);\r",
+							"console.log(\"area_code use for after request:\", jsonData.data[0].area_code)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/areas",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"areas"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getAreaCode",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "3b19a941-116b-41cd-9d42-c6c556ea7ec0",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"area_code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"province\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"district\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"precinct\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"provinceShop\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/areas/{{area_code}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"areas",
+						"{{area_code}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getAreaByAreaCodeDetails",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "52d706c8-1486-43ab-bc16-ffd63741d02e",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"area_code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"province\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"district\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"precinct\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"provinceShop\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/areas/{{area_code}}/details",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"areas",
+						"{{area_code}}",
+						"details"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getBank",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "72e42031-5021-4f07-88b6-8a7c06d8c7e1",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.listData.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"count\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name_vietnamese\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name_national\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name_trading\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_active\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"count\");\r",
+							"    }\r",
+							"});\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.globals.set('bankId', jsonData.data.listData[0].id);\r",
+							"console.log(\"bankId use for after request:\", jsonData.data.listData[0].id)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/banks",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"banks"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getBankDetail",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "7aac0489-57f3-4268-bbbf-1160f38c5e6a",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name_vietnamese\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name_national\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name_trading\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_active\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/banks/{{bankId}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"banks",
+						"{{bankId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getBoo",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "5e6f02c6-c807-4853-b544-391f1014f39b",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.listData.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"count\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"phone\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"isActive\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"count\");\r",
+							"    }\r",
+							"});\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.globals.set('booId', jsonData.data.listData[0].id);\r",
+							"console.log(\"booId use for after request:\", jsonData.data.listData[0].id)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/boo",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"boo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getBooDetail",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "4a4a261b-07d9-4b19-a825-9886eb84abc4",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"taxCode\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"chargeMethodSelect\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"addressId\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_active\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/boo/{{booId}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"boo",
+						"{{booId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getBots",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "8a593408-8d9b-4715-b470-bddabd4c0d24",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.listData.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"count\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_active\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"count\");\r",
+							"    }\r",
+							"});\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.globals.set('botsId', jsonData.data.listData[0].id);\r",
+							"console.log(\"botsId use for after request:\", jsonData.data.listData[0].id)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/bots",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"bots"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getBotsDetail",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "93c85a2c-4b01-4272-a7e2-cc7912a5cfb9",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"stationOutList\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"stationInList\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"address_id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"closeStationList\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"address\");\r",
+							"pm.expect(pm.response.text()).to.include(\"bank\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/bots/{{botsId}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"bots",
+						"{{botsId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getCategories",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "d90026f4-6376-4dfd-a579-5911d07a17cb",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.listData.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"count\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"table_name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_default\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"description\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_active\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"count\");\r",
+							"    }\r",
+							"});\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.globals.set('categoriesID', jsonData.data.listData[0].id);\r",
+							"console.log(\"categoriesID use for after request:\", jsonData.data.listData[0].id)\r",
+							"pm.globals.set('table_name', jsonData.data.listData[0].table_name);\r",
+							"console.log(\"table_name use for after request:\", jsonData.data.listData[0].table_name)\r",
+							"pm.globals.set('code', jsonData.data.listData[0].code);\r",
+							"console.log(\"code use for after request:\", jsonData.data.listData[0].code)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/categories",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"categories"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getCategoriesDetail",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "0f605638-f619-4f2a-9b48-07160f855c58",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"table_name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_default\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"description\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_active\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/categories/{{categoriesID}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"categories",
+						"{{categoriesID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getCategoriesList",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e6a70a1e-300e-469e-8dbf-2cc62cdf8be5",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.listData.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"count\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"table_name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"description\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_active\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"count\");\r",
+							"    }\r",
+							"});\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.globals.set('categoriesID', jsonData.data.listData[0].id);\r",
+							"console.log(\"categoriesID use for after request:\", jsonData.data.listData[0].id)\r",
+							"pm.globals.set('table_name', jsonData.data.listData[0].table_name);\r",
+							"console.log(\"table_name use for after request:\", jsonData.data.listData[0].table_name)\r",
+							"pm.globals.set('code', jsonData.data.listData[0].code);\r",
+							"console.log(\"code use for after request:\", jsonData.data.listData[0].code)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/categories-list",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"categories-list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getCustType",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b38782a0-efca-4cc8-a3e0-1e5858188af8",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"cust_type_id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"type\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/customer-types",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"customer-types"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getDocumentType",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "0ec2eedd-d107-4714-aa58-b19a3db22932",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"val\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"    }\r",
+							"});\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.globals.set('documentTypesId', jsonData.data[0].id);\r",
+							"console.log(\"documentTypesId use for after request:\", jsonData.data[0].id)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/document-types",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"document-types"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getDocumentByCustTypeId",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "68a201a5-dacf-4529-8350-a80ca36df1c6",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"val\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/document-types/{{documentTypesId}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"document-types",
+						"{{documentTypesId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getLane",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "167dcd85-eec3-496b-bb56-36709a59fba3",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.listData.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"station_id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"station\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_active\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"    }\r",
+							"});\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.globals.set('laneId', jsonData.data.listData[0].id);\r",
+							"console.log(\"laneId use for after request:\", jsonData.data.listData[0].id)\r",
+							"pm.globals.set('stationCode', jsonData.data.listData[0].station.code);\r",
+							"console.log(\"stationCode use for after request:\", jsonData.data.listData[0].station.code)\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/lanes",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"lanes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getLaneByCode",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "05b8ff75-795e-4732-a8bb-fdc6ab830d95",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.listData.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"station_id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_active\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/lanes/{{stationCode}}/station",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"lanes",
+						"{{stationCode}}",
+						"station"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getLaneDetail",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "089b035d-46a8-4e3c-8d47-cd5562b487ad",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"station_id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_active\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/lanes/{{laneId}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"lanes",
+						"{{laneId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getStationStage",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "58f61d18-8645-4c99-b6f2-6fc1ef5ba8f3",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.listData.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"count\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"methodChargeId\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"stationId\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"booCode\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"stationType\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"count\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/mobile/stage/station",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"mobile",
+						"stage",
+						"station"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getPaymentType",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "639f913d-b630-472d-b2f1-6fb6f82cc51b",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"val\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_default\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"    }\r",
+							"});\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.globals.set('paymentTypesId', jsonData.data[0].id);\r",
+							"console.log(\"paymentTypesId use for after request:\", jsonData.data[0].id)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/payment-types",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"payment-types"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getPaymentName",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "177e4917-8a35-4998-872e-4a3ae7f73df8",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/payment-types/{{paymentTypesId}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"payment-types",
+						"{{paymentTypesId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getStation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "705f8161-137f-41f7-9080-508a2626952a",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.listData.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"count\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_active\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"count\");\r",
+							"    }\r",
+							"});\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.globals.set('routesId', jsonData.data.listData[0].id);\r",
+							"console.log(\"routesId use for after request:\", jsonData.data.listData[0].id)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/routes",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"routes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getRouteDetail",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "688eb034-73d2-4937-988e-5d011840f1a6",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"stagesList\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_active\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/routes/{{routesId}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"routes",
+						"{{routesId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getStagesMobile",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "22f2d61a-4472-41e3-b367-dce5aaf18de8",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.listData.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"count\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name_short\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_active\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"route_id\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"listData\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"count\");\r",
+							"    }\r",
+							"});\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.globals.set('stagesId', jsonData.data.listData[0].id);\r",
+							"console.log(\"stagesId use for after request:\", jsonData.data.listData[0].id)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/mobile/stages",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"mobile",
+						"stages"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "stageDetailMobile",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "3332d827-7e6a-4980-bbde-0b3b22d6fd2f",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name_short\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_active\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"route_id\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/mobile/stages/{{stagesId}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"mobile",
+						"stages",
+						"{{stagesId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getStages",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f68482e4-af37-4c21-9628-2a79fcb2ad41",
+						"exec": [
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"\tvar jsonData = JSON.parse(responseBody);\r",
+							"    pm.expect(jsonData.mess.description).to.eql(\"Thành công\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    if(responseBody !=null && jsonData.data.length !=0){\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name_short\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"code\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"is_active\");\r",
+							"        pm.expect(pm.response.text()).to.include(\"route_id\");\r",
+							"    } else {\r",
+							"        pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "{{access_token}}",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/v1/stages",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"stages"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"id": "e0fe1b34-337f-47a3-bc1d-abd6e94ed9f6",
+			"key": "host",
+			"value": "http://10.60.108.172:9752"
+		}
+	],
+	"protocolProfileBehavior": {}
+}

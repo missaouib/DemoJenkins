@@ -1,0 +1,104 @@
+pipeline{
+    agent{
+        label "slave_43"
+    }
+    stages{
+        stage("check source change"){
+            steps{
+                sh 'chmod a+x build.sh'
+                script {
+                    check_EInvoiceGW = sh(script:"./build.sh EInvoiceGW", returnStdout: true).trim()
+                    echo "change folder EInvoiceGW flag: ${check_EInvoiceGW}"
+					check_EInvoiceCommon = sh(script: "./build.sh EInvoiceCommon" , returnStdout: true).trim()
+                    echo "change folder EInvoiceCommon flag: ${check_EInvoiceCommon}"
+					check_EInvoiceWeb = sh(script: "./build.sh EInvoiceWeb" , returnStdout: true).trim()
+                    echo "change folder EInvoiceWeb flag: ${check_EInvoiceWeb}"
+                    check_EinvoiceReportService = sh(script: "./build.sh EinvoiceReportService" , returnStdout: true).trim()
+                    echo "change folder EinvoiceReportService flag: ${check_EinvoiceReportService}"
+					check_MultitenancyHibernate = sh(script: "./build.sh MultitenancyHibernate" , returnStdout: true).trim()
+                    echo "change folder MultitenancyHibernate flag: ${check_MultitenancyHibernate}"
+                }
+            }
+        }
+        stage("Parallel Builds"){
+            parallel {
+                stage('EInvoiceGW'){
+                    stages{
+                        stage('Build & Deploy EInvoiceGW'){
+                            steps{
+                                script{
+                                    if(check_EInvoiceGW == "change EInvoiceGW"){
+                                        build job:'hddt-build-gw'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('EInvoiceCommon'){
+                    stages{
+                        stage('Build & Deploy EInvoiceCommon'){
+                            steps{
+                                script{
+                                    if( check_EInvoiceCommon == "change EInvoiceCommon"){
+                                        build job: 'hddt-build-ecommon'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('EInvoiceWeb'){
+                    stages{
+                        stage('Build & Deploy EInvoiceWeb'){
+                            steps{
+                                script{
+                                    if(check_EInvoiceWeb == "change EInvoiceWeb"){
+                                        build job: 'hddt-build-web'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('EinvoiceReportService'){
+                    stages{
+                        stage('Build EinvoiceReportService'){
+                            steps{
+                                script{
+                                    if(check_EinvoiceReportService == "change EinvoiceReportService"){
+                                        build job: 'hddt-build-report'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('MultitenancyHibernate'){
+                    stages{
+                        stage('Build MultitenancyHibernate'){
+                            steps{
+                                script{
+                                    if(check_MultitenancyHibernate == "change MultitenancyHibernate"){
+                                        build job: 'hddt-build-Multi'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    post{
+        always{
+            echo "========always========"
+        }
+        success{
+            echo " ==========build success===="
+        }
+        failure{
+            echo "Pipeline build failed"
+        }
+    }
+}

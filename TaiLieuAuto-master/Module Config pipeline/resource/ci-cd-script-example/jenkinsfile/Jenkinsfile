@@ -1,0 +1,742 @@
+import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
+import java.text.DecimalFormat
+import groovy.json.JsonOutput
+import groovy.util.XmlSlurper
+import hudson.tasks.test.AbstractTestResultAction
+
+//def lastCommitShortName = env.gitlabMergeRequestLastCommit.substring(0, 8)
+
+//env.DISPLAY_BUILD_NAME = "${env.gitlabSourceBranch}:${lastCommitShortName} -> ${env.gitlabTargetBranch} - ${env.gitlabActionType}"
+UnitTestResult globalUnitTestResult = new UnitTestResult()
+//notServiceModuleList = ["cicd", "commons"]
+
+def autoTest() {
+
+    stage('Check environment') {
+        echo "TimeStamp: ${env.BUILD_TIMESTAMP}"
+        echo "workspace: ${env.WORKSPACE}"
+        echo "gitlabBranch: ${env.gitlabBranch}"
+        echo "gitlabSourceBranch: ${env.gitlabSourceBranch}"
+        echo "gitlabActionType: ${env.gitlabActionType}"
+        echo "gitlabUserName: ${env.gitlabUserName}"
+        echo "gitlabUserEmail: ${env.gitlabUserEmail}"
+        echo "gitlabSourceRepoHomepage: ${env.gitlabSourceRepoHomepage}"
+        echo "gitlabSourceRepoName: ${env.gitlabSourceRepoName}"
+        echo "gitlabSourceRepoURL: ${env.gitlabSourceRepoURL}"
+        echo "gitlabSourceRepoSshUrl: ${env.gitlabSourceRepoSshUrl}"
+        echo "gitlabMergeRequestTitle: ${env.gitlabMergeRequestTitle}"
+        echo "gitlabMergeRequestDescription: ${env.gitlabMergeRequestDescription}"
+        echo "gitlabMergeRequestId: ${env.gitlabMergeRequestId}"
+        echo "gitlabMergeRequestState: ${env.gitlabMergeRequestState}"
+        echo "gitlabMergedByUser: ${env.gitlabMergedByUser}"
+        echo "gitlabMergeRequestAssignee: ${env.gitlabMergeRequestAssignee}"
+        echo "gitlabMergeRequestLastCommit: ${env.gitlabMergeRequestLastCommit}"
+        echo "gitlabMergeRequestTargetProjectId: ${env.gitlabMergeRequestTargetProjectId}"
+        echo "gitlabTargetBranch: ${env.gitlabTargetBranch}"
+        echo "gitlabTargetRepoName: ${env.gitlabTargetRepoName}"
+        echo "gitlabTargetNamespace: ${env.gitlabTargetNamespace}"
+        echo "gitlabTargetRepoSshUrl: ${env.gitlabTargetRepoSshUrl}"
+        echo "gitlabBefore: ${env.gitlabBefore}"
+        echo "gitlabAfter: ${env.gitlabAfter}"
+        echo "gitlabTriggerPhrase: ${env.gitlabTriggerPhrase}"
+    }
+
+    stage("Check dir status") {
+        echo "Test OK"
+        sh "ls -al"
+    }
+
+    stage('Auto Test Unit Tests') {
+        try {
+            sh 'chmod +x build.sh'
+            sh './build.sh test'
+        } catch (err) {
+            echo "Error when test Unit Test"
+            throw err
+        } finally {
+            //dang bi loi khong thuc hien duoc recording test result
+            sh 'ls -al'
+            junit '*/target/*-reports/TEST-*.xml'
+            UnitTestResult unitTestResult = getUnitTestStatus()
+            globalUnitTestResult = unitTestResult
+            def testResultString = "- Passed: <b>${unitTestResult.passed}</b> <br/>" +
+                    "- Failed: <b>${unitTestResult.failed}</b> <br/>" +
+                    "- Skipped: <b>${unitTestResult.skipped}</b> <br/>"
+            def testResultComment = "<b>Test Result:</b> <br/><br/>${testResultString} " +
+                    "<i><a href='${env.BUILD_URL}testReport/'>Details Test Report...</a></i><br/><br/>"
+            addResultStringToBuildResultComment(testResultComment)
+            if (unitTestResult.failed > 0) {
+                error "Failed ${unitTestResult.failed} unit tests"
+            }
+        }
+    }
+
+    stage('Code Coverage Tests') {
+        sh './build.sh coverage'
+        def coverageInfoXmlStr = readFile "cicd/target/jacoco-aggregate-report/jacoco.xml"
+        ProjectCoverageInfo projectCoverageInfo = processCoverageFile(coverageInfoXmlStr)
+        def coverageResultStr = "Coverage Test Result: \n\n"
+        coverageResultStr += "Overall Project Coverage: " +
+                projectCoverageInfo.projectCoverage.genCoverageInfoStr() + "\n"
+        coverageResultStr +=
+                "Module Coverage Info: \n"
+        for (moduleCoverageInfo in projectCoverageInfo.moduleCoverageInfoList) {
+            coverageResultStr += moduleCoverageInfo.genModuleCoverageInfoStr() + "\n"
+        }
+        echo "${coverageResultStr}"
+        publishHTML([
+                allowMissing         : false,
+                alwaysLinkToLastBuild: false,
+                keepAll              : true,
+                reportDir            : 'cicd/target/jacoco-aggregate-report/',
+                reportFiles          : 'index.html',
+                reportName           : 'Code-Coverage-Report',
+                reportTitles         : 'Code-Coverage-Report'])
+
+        // TODO(conghm1) Implement build fail coverage for each module
+        def coverageResultStrComment = "<b>Coverage Test Result:</b> <br/><br/>"
+        coverageResultStrComment += projectCoverageInfo.genCodeCoverageInfoMarkdown()
+        coverageResultStrComment += "<i><a href='${env.BUILD_URL}Code-Coverage-Report/'>" +
+                "Details Code Coverage Test Report...</a></i><br/><br/>"
+        addResultStringToBuildResultComment(coverageResultStrComment)
+
+    }
+
+    stage('Check Style Tests') {
+        def totalCheckStyleWarning = ""
+        docker.image(env.MAVEN_ORACLE_JDK_10_IMAGE).inside("-v '${HOME}/.m2:/root/.m2:rw'") {
+            sh 'mvn  --settings .settings.xml clean jxr:aggregate checkstyle:checkstyle-aggregate'
+            checkstyle pattern: 'target/checkstyle-result.xml',
+                    canRunOnFailed: true,
+                    defaultEncoding: '',
+                    healthy: '100',
+                    unHealthy: '90',
+                    useStableBuildAsReference: true
+            def checkstyleXMLStr = readFile "target/checkstyle-result.xml"
+            totalCheckStyleWarning = getTotalCheckStyleWarning(checkstyleXMLStr)
+
+        }
+        def testResultString = "<b>Total warning</b>: ${totalCheckStyleWarning.toString()} <br/><br/>".toString()
+        def testResultComment = "<b>Check Sytle Test Result:</b> <br/><br/>${testResultString} " +
+                "<i><a href='${env.BUILD_URL}checkstyleResult/'>Details Check Style Test Report...</a></i><br/><br/>"
+        addResultStringToBuildResultComment(testResultComment)
+
+    }
+
+    stage('SonarQube Scan Tests') {
+        String sonarqubeProjectKey = ""
+        if (env.BUILD_TYPE == "push_build"|| env.BUILD_TYPE == "deploy_production") {
+            sonarqubeProjectKey = "${env.gitlabSourceRepoName}:${env.gitlabSourceBranch}"
+        } else if (env.BUILD_TYPE == "merge_request_build") {
+            sonarqubeProjectKey = "MR-${env.gitlabSourceRepoName}:${env.gitlabSourceBranch}-to-" +
+                    "${env.gitlabTargetBranch}"
+        }
+        env.SONAR_QUBE_PROJECT_KEY = sonarqubeProjectKey.replace('/', '-')
+        docker.image(env.MAVEN_ORACLE_JDK_10_IMAGE).inside("-v '${HOME}/.m2:/root/.m2:rw'") {
+            withSonarQubeEnv("${env.SONAR_QUBE_SETTING_CONFIG}") {
+                sh "mvn  --settings .settings.xml clean package sonar:sonar " +
+                        "-Dsonar.projectName=${env.SONAR_QUBE_PROJECT_KEY} " +
+                        "-Dsonar.projectKey=${env.SONAR_QUBE_PROJECT_KEY} "
+                sh 'ls -al'
+                sh 'cat target/sonar/report-task.txt'
+                def props = readProperties file: 'target/sonar/report-task.txt'
+                env.SONAR_CE_TASK_ID = props['ceTaskId']
+                env.SONAR_PROJECT_KEY = props['projectKey']
+                env.SONAR_SERVER_URL = props['serverUrl']
+                env.SONAR_DASHBOARD_URL = props['dashboardUrl']
+
+                echo "SONAR_SERVER_URL: ${env.SONAR_SERVER_URL}"
+                echo "SONAR_PROJECT_KEY: ${env.SONAR_PROJECT_KEY}"
+                echo "SONAR_DASHBOARD_URL: ${env.SONAR_DASHBOARD_URL}"
+            }
+        }
+    }
+    //check ket noi toi sonarqube + wait cho den khi sonar scan completed -> phan tich du lieu -> add to comment
+    stage("Quality Gate") {
+        def qg = null
+        try {
+            def sonarQubeRetry = 0
+            def sonarScanCompleted = false
+            while (!sonarScanCompleted) {
+                try {
+                    sleep 10
+                    timeout(time: 1, unit: 'MINUTES') {
+                        script {
+                            qg = waitForQualityGate()
+                            sonarScanCompleted = true
+                            if (qg.status != 'OK') {
+                                error "Pipeline failed due to quality gate failure: ${qg.status}"
+                            }
+                        }
+                    }
+                } catch (err) {
+                    throw err
+                }
+            }
+        } catch (FlowInterruptedException interruptEx) {
+            if (interruptEx.getCauses()[0] instanceof org.jenkinsci.plugins.workflow.steps.TimeoutStepExecution.ExceededTimeout) {
+                //timeout
+                if (sonarQubeRetry <= 10) {
+                    sonarQubeRetry += 1
+                } else {
+                    error "Cannot get result from Sonarqube server. Build Failed."
+                }
+            } else {
+                throw interruptEx
+            }
+        }
+        catch (err) {
+            throw err
+        } finally {
+            //get SonarQube Analysis Result from url + project key
+            def codeAnalysisResult = getSonarQubeAnalysisResult(env.SONAR_SERVER_URL, env.SONAR_PROJECT_KEY)
+
+            def sonarQubeAnalysisStr = "- Vulnerabilities: <b>${codeAnalysisResult.vulnerabilities}</b> <br/>" +
+                    "- Bugs: <b>${codeAnalysisResult.bugs}</b> <br/>"
+            def sonarQubeAnalysisComment = "<b>SonarQube Code Analysis Result:</b> <br/><br/>${sonarQubeAnalysisStr} " +
+                    "<i><a href='${SONAR_DASHBOARD_URL}'>" +
+                    "Details SonarQube Code Analysis Report...</a></i><br/><br/>"
+            addResultStringToBuildResultComment(sonarQubeAnalysisComment)
+            if (env.BUILD_TYPE == "merge_request_build") {
+                echo "check vulnerabilities and bugs"
+                int maximumAllowedVulnerabilities = env.MAXIMUM_ALLOWED_VUNERABILITIES as Integer
+                int maximumAllowedBugs = env.MAXIMUM_ALLOWED_BUGS as Integer
+                echo "maximum allow vulnerabilities:  ${maximumAllowedVulnerabilities} "
+                echo "maximum allow bugs:  ${maximumAllowedBugs}"
+                if (codeAnalysisResult.vulnerabilities > maximumAllowedVulnerabilities ||
+                        codeAnalysisResult.bugs > maximumAllowedBugs) {
+                    error "Vulnerability or bug number overs allowed limits!"
+                }
+            }
+
+        }
+    }
+}
+
+@SuppressWarnings("GrMethodMayBeStatic")
+@NonCPS
+def parseXml(xmlString) {
+    def xmlParser = new XmlSlurper()
+    xmlParser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false)
+    xmlParser.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+    return xmlParser.parseText(xmlString)
+}
+
+def toJSONString(data) {
+    return JsonOutput.toJson(data)
+}
+
+Long getTotalCheckStyleWarning(checkStyleXMLStr) {
+    def checkStyleXML = parseXml(checkStyleXMLStr)
+    def totalWarning = 0L
+    checkStyleXML.file.each {
+        def fileWarning = 0L
+        it.error.each {
+            fileWarning += 1L
+        }
+        totalWarning += fileWarning
+    }
+    return totalWarning
+}
+
+ProjectCoverageInfo processCoverageFile(coverageInfoXmlStr) {
+    ProjectCoverageInfo projectCoverageInfo = new ProjectCoverageInfo()
+    def projectCoverage = new CoverageInfo()
+    def moduleCoverageInfoList = []
+    def coverageInfoXml = parseXml(coverageInfoXmlStr)
+    processCoverageInfoXml(coverageInfoXml, projectCoverage)
+    coverageInfoXml.group.each {
+        def moduleCoverageInfo = new ModuleCoverageInfo()
+        moduleCoverageInfo.moduleName = it.@name
+        processCoverageInfoXml(it, moduleCoverageInfo.coverageInfo)
+        moduleCoverageInfoList.add(moduleCoverageInfo)
+    }
+    projectCoverageInfo.projectCoverage = projectCoverage
+    projectCoverageInfo.moduleCoverageInfoList = moduleCoverageInfoList
+
+    return projectCoverageInfo
+}
+
+
+@SuppressWarnings(["GrMethodMayBeStatic", "GroovyFallthrough"])
+def processCoverageInfoXml(coverageInfoXml, CoverageInfo coverageInfo) {
+    coverageInfoXml.counter.each {
+        def coverageType = it.@type as String
+        int missed = (it.@missed as String) as Integer
+        int covered = (it.@covered as String) as Integer
+        int total = missed + covered
+        switch (coverageType) {
+            case 'INSTRUCTION':
+                coverageInfo.instructionCov = new CoverageByTypeInfo("INSTRUCTION", total, covered)
+            case 'BRANCH':
+                coverageInfo.branchCov = new CoverageByTypeInfo("BRANCH", total, covered)
+            case 'LINE':
+                coverageInfo.lineCov = new CoverageByTypeInfo("LINE", total, covered)
+            case 'COMPLEXITY':
+                coverageInfo.complexityCov = new CoverageByTypeInfo("COMPLEXITY", total, covered)
+            case 'METHOD':
+                coverageInfo.methodCov = new CoverageByTypeInfo("METHOD", total, covered)
+            case 'CLASS':
+                coverageInfo.classCov = new CoverageByTypeInfo("CLASS", total, covered)
+        }
+    }
+}
+
+class CoverageByTypeInfo {
+    int total
+    int covered
+    double coveragePercent
+    String typeName
+
+    CoverageByTypeInfo(String typeName, int total, int covered) {
+        this.typeName = typeName
+        this.total = total
+        this.covered = covered
+        if (this.total > 0) {
+            this.coveragePercent = Double.parseDouble(
+                    new DecimalFormat("###.##").format(covered * 100.0 / total))
+        } else {
+            this.coveragePercent = 0.00
+        }
+    }
+
+    def genCoverageByTypeInfoStr() {
+        return "${typeName}: covered: ${covered}, total: ${total} <<-->> ${coveragePercent}%;   "
+    }
+
+    def genCoverageByTypeInfoStrMarkDown() {
+        return "- <b>${typeName}</b>: <i>${covered}</i>/<i>${total}</i> (<b>${coveragePercent}%</b>)<br/>"
+    }
+
+}
+
+class CoverageInfo {
+    CoverageByTypeInfo instructionCov
+    CoverageByTypeInfo lineCov
+    CoverageByTypeInfo branchCov
+    CoverageByTypeInfo classCov
+    CoverageByTypeInfo methodCov
+    CoverageByTypeInfo complexityCov
+
+    CoverageInfo() {
+    }
+
+    String genCoverageInfoStr() {
+        def coverageInfoStr = ""
+        coverageInfoStr += instructionCov.genCoverageByTypeInfoStr()
+        coverageInfoStr += lineCov.genCoverageByTypeInfoStr()
+        coverageInfoStr += branchCov.genCoverageByTypeInfoStr()
+        coverageInfoStr += classCov.genCoverageByTypeInfoStr()
+        coverageInfoStr += methodCov.genCoverageByTypeInfoStr()
+        coverageInfoStr += complexityCov.genCoverageByTypeInfoStr()
+        coverageInfoStr += "\n"
+        return coverageInfoStr
+    }
+
+    String genCoverageInfoStrMarkDown() {
+        def coverageInfoStr = ""
+        coverageInfoStr += instructionCov.genCoverageByTypeInfoStrMarkDown()
+        coverageInfoStr += lineCov.genCoverageByTypeInfoStrMarkDown()
+        coverageInfoStr += branchCov.genCoverageByTypeInfoStrMarkDown()
+        coverageInfoStr += classCov.genCoverageByTypeInfoStrMarkDown()
+        coverageInfoStr += methodCov.genCoverageByTypeInfoStrMarkDown()
+        coverageInfoStr += complexityCov.genCoverageByTypeInfoStrMarkDown()
+        coverageInfoStr += " <br/> "
+        return coverageInfoStr
+    }
+}
+
+class ModuleCoverageInfo {
+    String moduleName
+    CoverageInfo coverageInfo
+
+    ModuleCoverageInfo() {
+        this.moduleName = ""
+        this.coverageInfo = new CoverageInfo()
+    }
+
+    String genModuleCoverageInfoStr() {
+        return "Module: ${moduleName} - " + coverageInfo.genCoverageInfoStr()
+    }
+}
+
+class ProjectCoverageInfo {
+    CoverageInfo projectCoverage
+    ModuleCoverageInfo[] moduleCoverageInfoList
+
+    ProjectCoverageInfo() {
+    }
+
+    def genCodeCoverageInfoMarkdown() {
+        def coverageResultStr = projectCoverage.genCoverageInfoStrMarkDown() + "<br/> "
+        return coverageResultStr
+    }
+
+}
+
+def getUnitTestStatus() {
+    UnitTestResult unitTestResult = new UnitTestResult()
+    def testResultAction = getUnitTestResultFromJenkins()
+    if (testResultAction != null) {
+        unitTestResult.total = testResultAction.totalCount
+        unitTestResult.failed = testResultAction.failCount
+        unitTestResult.skipped = testResultAction.skipCount
+        unitTestResult.passed = unitTestResult.total - unitTestResult.failed - unitTestResult.passed
+    }
+    return unitTestResult
+}
+
+class SonarQubeAnalysisResult {
+    int bugs
+    int vulnerabilities
+
+    SonarQubeAnalysisResult(int bugs, int vulnerabilities) {
+        this.bugs = bugs
+        this.vulnerabilities = vulnerabilities
+    }
+
+}
+
+def addResultStringToBuildResultComment(String resultString) {
+    if (env.BUILD_TYPE == "push_build"|| env.BUILD_TYPE == "merge_request_build") {
+        env.PUSH_COMMIT_BUILD_COMMENT += resultString
+        env.MERGE_REQUEST_BUILD_COMMENT += resultString
+    } else if (env.BUILD_TYPE == "deploy_production") {
+        env.DEPLOY_RESULT_DESCRIPTION += resultString
+    }
+}
+
+def getSonarQubeAnalysisResult(sonarQubeURL, projectKey) {
+    def metricKeys = "bugs,vulnerabilities"
+    def metricResultList = getSonarQubeMeasureMetric(sonarQubeURL, projectKey, metricKeys)
+    echo "${metricResultList}"
+    int bugsEntry = getMetricEntryByKey(metricResultList, "bugs")['value'] as Integer
+    int vulnerabilitiesEntry = getMetricEntryByKey(metricResultList, "vulnerabilities")['value'] as Integer
+    return new SonarQubeAnalysisResult(bugsEntry, vulnerabilitiesEntry)
+}
+
+def getMetricEntryByKey(metricResultList, metricKey) {
+    for (metricEntry in metricResultList) {
+        if (metricEntry["metric"] == metricKey) {
+            echo "${metricEntry}"
+            return metricEntry
+        }
+    }
+    return null
+}
+
+def getSonarQubeMeasureMetric(sonarQubeURL, projectKey, metricKeys) {
+    def measureResp = httpRequest([
+            acceptType : 'APPLICATION_JSON',
+            httpMode   : 'GET',
+            contentType: 'APPLICATION_JSON',
+            url        : "${sonarQubeURL}/api/measures/component?metricKeys=${metricKeys}&component=${projectKey}"
+    ])
+    def measureInfo = jsonParse(measureResp.content)
+    echo "${measureInfo}"
+    return measureInfo['component']['measures']
+}
+
+@SuppressWarnings("GrMethodMayBeStatic")
+@NonCPS
+def jsonParse(def jsonString) {
+    new groovy.json.JsonSlurperClassic().parseText(jsonString)
+}
+
+def checkModuleIsService(String moduleName) {
+    isService = true
+    def notServiceModuleList1 = "${env.NOT_SERVICE_MODULE_LIST}".split(";")
+    for (notServiceModule in notServiceModuleList1) {
+//        echo "Check module ${notServiceModule}"
+        if (moduleName == notServiceModule) {
+            isService = false
+        }
+    }
+//    echo "is service: ${isService}"
+    return isService
+}
+
+def getServiceList(pomXMLStr) {
+    def servcieList = []
+    def pomXml = parseXml(pomXMLStr)
+    pomXml.modules[0].module.each {
+        if (checkModuleIsService(it.text()))
+            servcieList.add(it.text())
+    }
+    return servcieList
+}
+
+def getProjectVersion(pomXMLStr) {
+    def pomXml = parseXml(pomXMLStr)
+    return pomXml.version.text()
+}
+
+@NonCPS
+def getUnitTestResultFromJenkins() {
+    AbstractTestResultAction testResultAction = currentBuild.rawBuild.getAction(AbstractTestResultAction.class)
+    return testResultAction
+}
+
+class UnitTestResult {
+    int total
+    int failed
+    int skipped
+    int passed
+
+    UnitTestResult() {}
+}
+
+class FunctionalTestResult {
+    int total
+    int failed
+    int skipped
+    int passed
+
+    FunctionalTestResult() {}
+}
+
+def getFunctionalTestStatus(UnitTestResult unitTestResult) {
+    FunctionalTestResult functionalTestResult = new FunctionalTestResult()
+    def testResultAction = getUnitTestResultFromJenkins()
+    if (testResultAction != null && unitTestResult != null) {
+        functionalTestResult.total = testResultAction.totalCount - unitTestResult.total
+        functionalTestResult.failed = testResultAction.failCount - unitTestResult.failed
+        functionalTestResult.skipped = testResultAction.skipCount - unitTestResult.skipped
+        functionalTestResult.passed = functionalTestResult.total - functionalTestResult.failed - functionalTestResult.skipped
+    }
+    return functionalTestResult
+}
+
+def loadConfigFile() {
+    configFileProvider([configFile(fileId: "ci-config", targetLocation: 'cicd/')]) {
+        load "cicd/ci-config"
+    }
+    if(env.gitlabSourceRepoName!=null){
+        env.gitlabSourceRepoName = env.gitlabSourceRepoName.replace(" ", "-")
+    }
+    if(env.gitlabTargetRepoName!=null){
+        env.gitlabTargetRepoName = env.gitlabTargetRepoName.replace(" ", "-")
+    }
+
+}
+
+def packageAndDeploy() {
+    echo "START packageAndDeploy"
+    def pomXMLStr = readFile "pom.xml"
+    def serviceList = getServiceList(pomXMLStr)
+    echo "${serviceList}"
+    echo "${serviceList.size()}"
+    def projectVersion = getProjectVersion(pomXMLStr)
+    echo "Project Version: ${projectVersion}"
+    def serviceListStr = "{'SERVICE_LIST': ${serviceList}}".toString()
+    echo "serviceListJson: ${serviceListStr}"
+    def dockerImageTag = "${projectVersion}.${env.BUILD_ID}"
+
+    stage('Package & upload artifacts') {
+        sh 'chmod +x build.sh'
+        sh './build.sh package'
+        sh """
+            rm .env
+            touch .env
+            echo 'TAG=${dockerImageTag}' >> .env
+            echo 'IMAGE_TYPE=${env.STAGING_IMAGE_TYPE}' >> .env
+            echo 'IMAGE_REGISTRY_URL=${env.DOCKER_MAIN_REGISTRY}' >> .env
+            echo 'DOCKER_STAGING_REGISTRY=${env.DOCKER_STAGING_PUSH_REGISTRY}' >> .env
+            echo 'PROJECT_VERSION=${projectVersion}' >> .env
+            echo 'JDK_BASE_IMAGE=${env.STAGING_BASE_IMAGE}' >> .env
+            cat .env
+            ./build.sh staging-docker-build
+        """
+        def uploadSuccessComment = "<b>Build & package Artifact Results - " +
+                "Staging Image for services is created. " +
+                "Download it by command:</b><br/><br/> "
+        withDockerRegistry([
+                credentialsId: 'nexus-repo-credentials',
+                url          : "http://${env.DOCKER_STAGING_PUSH_REGISTRY}"]) {
+            //env.PROJECT_CODE trong file config
+            for (serviceName in serviceList) {
+                def stagingImage = docker.image("${env.DOCKER_STAGING_PUSH_REGISTRY}/${env.PROJECT_CODE}/" +
+                        "${env.STAGING_IMAGE_TYPE}/${serviceName}:${dockerImageTag}")
+                stagingImage.push()
+                uploadSuccessComment += "- <i>docker pull ${env.DOCKER_STAGING_PULL_REGISTRY}/${env.PROJECT_CODE}/" +
+                        "${env.STAGING_IMAGE_TYPE}/${serviceName}:${dockerImageTag}</i>" +
+                        "<br/>"
+            }
+
+        }
+        sh './build.sh staging-service-stack-down-rmi'
+        env.MERGE_REQUEST_BUILD_COMMENT += uploadSuccessComment
+    }
+    if (env.gitlabTargetBranch == env.STAGING_BRANCH) {
+        def stagingPublicIP = null
+        stage("Ensure Staging Environment is created") {
+            withCredentials([usernamePassword(
+                    credentialsId: "${env.OPENSTACK_STAGING_CREDENTIALS}",
+                    usernameVariable: 'openstack_username',
+                    passwordVariable: 'openstack_password')]) {
+                docker.image(env.ANSIBLE_CENTOS7_IMAGE).inside() {
+                    dir('cicd/continous-integration/ansible') {
+                        def stagingStackName = "${env.gitlabTargetRepoName}-" +
+                                "${env.gitlabSourceBranch}-${env.gitlabTargetBranch}-staging".replace("/", "-")
+                        sh "ansible-playbook -i jenkins_localhost.ini create_staging_stack.yml " +
+                                "-e stack_name=${stagingStackName} " +
+                                "-e server_name=${env.gitlabTargetRepoName}-${env.gitlabMergeRequestIid} " +
+                                "-e openstack_username=${openstack_username} " +
+                                "-e openstack_password=${openstack_password} " +
+                                "-e gitlab_merge_source_branch=${env.gitlabSourceBranch} " +
+                                "-e gitlab_merge_target_branch=${env.gitlabTargetBranch} " +
+                                "-e gitlab_project_api_url=${env.GITLAB_PROJECT_API_URL} " +
+                                "-e openstack_staging_auth_url=${env.OPENSTACK_STAGING_AUTH_URL} " +
+                                "-e staging_ssh_key=${env.STAGING_SSH_KEY} " +
+                                "-e staging_flavor=${env.STAGING_FLAVOR} " +
+                                "-e staging_image=${env.STAGING_IMAGE} " +
+                                "-e staging_public_net_id=${env.STAGING_PUBLIC_NET_ID} " +
+                                "-e staging_public_subnet_id=${env.STAGING_PUBLIC_SUBNET_ID} " +
+                                "-e staging_private_net_id=${env.STAGING_PRIVATE_NET_ID} " +
+                                "-e staging_private_subnet_id=${env.STAGING_PRIVATE_SUBNET_ID} " +
+                                "-e staging_user_domain_name=${env.OPENSTACK_STAGING_USER_DOMAIN_NAME} " +
+                                "-e staging_project_domain_name=${env.OPENSTACK_STAGING_PROJECT_DOMAIN_NAME} " +
+                                "-e staging_project_name=${env.OPENSTACK_STAGING_PROJECT_NAME} "
+                        sh 'ls -al'
+                        def staging_info = jsonParse(readFile(file: 'staging_server_ip.json'))
+                        for (output in staging_info) {
+                            if (output['output_key'] == "staging_server_public_ip") {
+                                echo " staging public ip: ${output['output_value']}"
+                                stagingPublicIP = output['output_value']
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+        stage("Deploy to Staging") {
+//            echo "${serviceList}"
+            withCredentials([sshUserPrivateKey(
+                    credentialsId: "${env.SSH_PRIVATE_KEY_CREDENTIALS}",
+                    keyFileVariable: 'stagingSSHPrivateKeyPath',
+                    usernameVariable: 'stagingSSHUserName'
+            )]) {
+                docker.image(env.ANSIBLE_CENTOS7_IMAGE).inside() {
+                    dir('cicd/continous-integration/ansible') {
+                        def currentDir = pwd()
+                        sh "ansible-playbook -i jenkins_localhost.ini prepare_staging_key_inventory.yml " +
+                                "-e SSH_USER_NAME=${stagingSSHUserName} " +
+                                "-e SSH_PRIVATE_KEY_PATH=${stagingSSHPrivateKeyPath} " +
+                                "-e STAGING_PUBLIC_IP=${stagingPublicIP} " +
+                                "-e CURRENT_JENKINS_LOCAL_DIR=${currentDir} "
+                        sh """
+                           ansible-playbook\
+                               -i staging_hosts.ini deploy_staging.yml\
+                               -e '{ "SERVICE_LIST":${serviceList}}'\
+                               -e WORKING_DIR=${env.STAGING_WORKING_DIR}\
+                               -e CURRENT_JENKINS_LOCAL_DIR=${currentDir}\
+                               -e IMAGE_REGISTRY_URL=${env.DOCKER_MAIN_REGISTRY}\
+                               -e DOCKER_STAGING_REGISTRY=${env.DOCKER_STAGING_PULL_REGISTRY}\
+                               -e IMAGE_TYPE=${env.STAGING_IMAGE_TYPE}\
+                               -e IMAGE_TAG=${dockerImageTag}\
+                               -e PROJECT_CODE=${env.PROJECT_CODE}\
+                               -e '{ "REFRESH_SERVICE_LIST_TIMEOUT":${
+                            env.REFRESH_SERVICE_LIST_TIMEOUT
+                        }}'
+                        """
+                    }
+                }
+            }
+            env.STAGING_IP = "${stagingPublicIP}"
+            env.MERGE_REQUEST_BUILD_COMMENT += "<br/>:information_source: " +
+                    "Staging Environment is created at IP: " +
+                    "<b><a href='http://${stagingPublicIP}'>${stagingPublicIP}</a></b><br/><br/>"
+        }
+        //comment functional test because not have script test
+        stage("Perform Functional Test") {
+            echo "Not have functional case in Perform Functional Test"
+//            try {
+//                sh """
+//                        ./build.sh functional_test http://${stagingPublicIP}:8060
+//                    """
+//            } catch (err) {
+//                echo "${err}"
+//            } finally {
+//                def exists = fileExists 'newman'
+//                if (exists) {
+//                    junit 'newman/test-result-*.xml'
+//                }
+//                FunctionalTestResult functionalTestResult = getFunctionalTestStatus(globalUnitTestResult)
+//                def functionalTestResultString = "- Passed: <b>${functionalTestResult.passed}</b> <br/>" +
+//                        "- Failed: <b>${functionalTestResult.failed}</b> <br/>" +
+//                        "- Skipped: <b>${functionalTestResult.skipped}</b> <br/>"
+//                def unitTestResultString = "- Passed: <b>${globalUnitTestResult.passed}</b> <br/>" +
+//                        "- Failed: <b>${globalUnitTestResult.failed}</b> <br/>" +
+//                        "- Skipped: <b>${globalUnitTestResult.skipped}</b> <br/>"
+//                def testResultComment = "<b> Test Result:</b> <br/><br/>" +
+//                        "<b>- Unit Test:</b> <br/>${unitTestResultString} <br/> " +
+//                        "<b>- Functional Test:</b> <br/>${functionalTestResultString} <br/> " +
+//                        "<i><a href='${env.BUILD_URL}testReport/'>Details Test Report...</a></i><br/><br/>"
+//                addResultStringToBuildResultComment(testResultComment)
+//                if (functionalTestResult.failed > 0) {
+//                    error "Failed ${functionalTestResult.failed} functional tests"
+//                }
+//
+//            }
+        }
+    }
+    echo "END packageAndDeploy"
+}
+
+def buildAcceptCloseMR() {
+    stage("Clean staging environment") {
+        sh "echo 'handle close MR events'"
+        withCredentials([usernamePassword(
+                credentialsId: "${env.OPENSTACK_STAGING_CREDENTIALS}",
+                usernameVariable: 'openstack_username',
+                passwordVariable: 'openstack_password')]) {
+            docker.image(env.ANSIBLE_CENTOS7_IMAGE).inside() {
+                dir('cicd/continous-integration/ansible') {
+                    def stagingStackName = "${env.gitlabTargetRepoName}-" +
+                            "${env.gitlabSourceBranch}-${env.gitlabTargetBranch}-staging".replace("/", "-")
+                    sh "ansible-playbook -i jenkins_localhost.ini destroy_staging_stack.yml " +
+                            "-e stack_name=${stagingStackName} " +
+                            "-e server_name=${env.gitlabTargetRepoName}-${env.gitlabMergeRequestIid} " +
+                            "-e openstack_username=${openstack_username} " +
+                            "-e openstack_password=${openstack_password} " +
+                            "-e gitlab_merge_source_branch=${env.gitlabSourceBranch} " +
+                            "-e gitlab_merge_target_branch=${env.gitlabTargetBranch} " +
+                            "-e gitlab_project_api_url=${GITLAB_PROJECT_API_URL} " +
+                            "-e openstack_staging_auth_url=${env.OPENSTACK_STAGING_AUTH_URL} " +
+                            "-e staging_ssh_key=${env.STAGING_SSH_KEY} " +
+                            "-e staging_flavor=${env.STAGING_FLAVOR} " +
+                            "-e staging_image=${env.STAGING_IMAGE} " +
+                            "-e staging_public_net_id=${env.STAGING_PUBLIC_NET_ID} " +
+                            "-e staging_public_subnet_id=${env.STAGING_PUBLIC_SUBNET_ID} " +
+                            "-e staging_private_net_id=${env.STAGING_PRIVATE_NET_ID} " +
+                            "-e staging_private_subnet_id=${env.STAGING_PRIVATE_SUBNET_ID} " +
+                            "-e staging_user_domain_name=${env.OPENSTACK_STAGING_USER_DOMAIN_NAME} " +
+                            "-e staging_project_domain_name=${env.OPENSTACK_STAGING_PROJECT_DOMAIN_NAME} " +
+                            "-e staging_project_name=${env.OPENSTACK_STAGING_PROJECT_NAME} "
+                }
+
+            }
+        }
+    }
+    currentBuild.result = "SUCCESS"
+}
+
+def buildPushCommit() {
+    autoTest()
+    currentBuild.result = "SUCCESS"
+}
+
+def buildMergeRequest() {
+    autoTest()
+    packageAndDeploy()
+    currentBuild.result = "SUCCESS"
+}
+
+return [
+        buildPushCommit  : this.&buildPushCommit,
+        buildMergeRequest: this.&buildMergeRequest,
+        loadConfigFile   : this.&loadConfigFile,
+        buildAcceptCloseMR: this.&buildAcceptCloseMR
+]

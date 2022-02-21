@@ -1,0 +1,7 @@
+- hosts: 10.60.155.244
+  remote_user: app
+  tasks:
+  - name: get file build artifact
+    win_get_url:
+     url: http://10.60.156.26:8081/repository/msbuild/{{GROUPID}}/{{GROUPID}}/1.{{VERSION}}/{{GROUPID}}-1.{{VERSION}}.zip
+     dest: C:\TCMR

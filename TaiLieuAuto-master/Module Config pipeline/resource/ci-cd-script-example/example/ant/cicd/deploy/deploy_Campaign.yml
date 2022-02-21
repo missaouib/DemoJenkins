@@ -1,0 +1,29 @@
+- hosts: 10.60.108.51
+  remote_user: haipcc
+  tasks:
+  - name: backup file Campaign
+    shell: |
+      cd /u01/haipcc/happycall_web/TOMCAT8080/webapps
+      mv Campaign Campaign_bk$(date +%Y%m%d%H%M%S)
+
+  - name: Check running processes tomcat
+    shell: ps -ef | grep 'happycall_web/TOMCAT8080' | grep -v grep | awk '{print $2}'
+    register: process_tomcat
+  
+  - name: Check proccess running
+    shell: |
+      ps -ef | grep 'happycall_web/TOMCAT8080' | grep -v grep | awk '{print $2}' | xargs kill -9 
+    when: process_tomcat.stdout != ""
+  - name: Copy file to folder lib
+    copy:
+      src: ../../Campaign/dist/Campaign.war
+      dest: /u01/haipcc/happycall_web/TOMCAT8080/webapps/
+  - name: rename file
+    shell: |
+      cd /u01/haipcc/happycall/campaignProcess_AutoImpCus/lib
+      mv {{artifactId}}-1.{{BUILD_NUMBER}}.war Campaign.war
+
+  - name: start service 
+    shell: |
+      cd /u01/haipcc/happycall_web/TOMCAT8080/bin
+      nohup ./startup.sh &

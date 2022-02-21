@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dmdc-frontend
+  labels:
+    app: etc
+    module: dmdc-frontend
+spec:
+  selector:
+    matchLabels:
+      app: etc
+      module: dmdc-frontend
+  template:
+    metadata:
+      labels:
+        app: etc
+        module: dmdc-frontend
+    spec:
+      containers:
+      - image: 10.60.156.72/etc/dmdc-frontend:__ETCDMDCFRONTENDVERSION__
+        name: dmdc-frontend
+        env:
+        - name: KEYCLOAK_BASE
+          valueFrom:
+            configMapKeyRef:
+                name: etc-env-configmap
+                key: KEYCLOAK_BASE
+        - name: DMDC_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+                name: etc-env-configmap
+                key: DMDC_BASE_URL
+        - name: DMDC_SERVICE
+          valueFrom:
+            configMapKeyRef:
+                name: etc-env-configmap
+                key: DMDC_SERVICE
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1.0Gi"
+        ports:
+        - containerPort: 80
+      imagePullSecrets:
+      - name: etc-regcred
+
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: dmdc-frontend-hpa
+spec:
+  maxReplicas: 1
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: dmdc-frontend
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80

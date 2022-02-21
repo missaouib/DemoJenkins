@@ -1,0 +1,16 @@
+maven project property - Jenkins environment variable
+
+project.displayName - POM_DISPLAYNAME
+
+project.version - POM_VERSION
+
+project.groupId - POM_GROUPID
+
+project.artifactId - POM_ARTIFACTID
+
+project.packaging - POM_PACKAGING
+
+project.relativePath - POM_RELATIVEPATH
+
+${SOURCE}/EInvoiceGW/EInvoiceGW/deploy_EInvoiceGW.yml
+

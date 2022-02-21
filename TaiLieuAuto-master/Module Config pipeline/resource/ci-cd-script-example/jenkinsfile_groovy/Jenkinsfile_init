@@ -1,0 +1,44 @@
+// use config in jenkins job for job CI, CD
+
+node("${node}"){
+        checkout changelog: true, poll: true, scm: [
+                $class                           : 'GitSCM',
+                branches                         : [[name: "${gitBranch}"]],
+                doGenerateSubmoduleConfigurations: false,
+                extensions                       : [[$class: 'UserIdentity', email: 'userGit@viettel.com.vn', name: 'userGit']],
+                submoduleCfg                     : [],
+                userRemoteConfigs                : [[credentialsId: 'credentialsId',
+                                                     name         : 'origin',
+                                                     url          : "${env.gitlabSourceRepoHomepage}" + ".git"]]
+        ]
+        jenkinsfile_bootstrap = load 'jenkinsfile_bootstrap.groovy'
+        jenkinsfile_bootstrap.bootstrap_build()
+    }
+
+// use config in jenkins job for job rollback
+
+node("${node}"){
+    checkout changelog: true, poll: true, scm: [
+        $class                           : 'GitSCM',
+        branches                         : [[name: "master"]],
+        doGenerateSubmoduleConfigurations: false,
+        extensions                       : [[$class: 'UserIdentity', email: 'userGit@viettel.com.vn', name: 'userGit']],
+        submoduleCfg                     : [],
+        userRemoteConfigs                : [[credentialsId: 'credentialsId',
+                                            name         : 'origin',
+                                            url          : "${env.gitlabSourceRepoHomepage}" + ".git"]]
+    ]
+    jenkinsfile_bootstrap = load 'jenkinsfile_bootstrap.groovy'
+    jenkinsfile_bootstrap.bootstrap_roll_back()
+}
+
+// check module cần deploy when push event in git
+
+def checkPullRequestResult = jenkinsfile_utils.hasChangesIn(env.gitlabBranch,"PUSH","SourceCode/SRC_QT01_14020_GPCP_DG_Voffice_V2_YENBAI")
+        println("check : $checkPullRequestResult")
+        if( checkPullRequestResult == true ){
+            echo "change detect"
+        }
+    def isRebuild = jenkinsfile_utils.getListRebuild("SourceCode/SRC_QT01_14020_GPCP_DG_Voffice_V2_YENBAI")
+    println("isRebuild: $isRebuild")
+    env.isRebuild = isRebuild

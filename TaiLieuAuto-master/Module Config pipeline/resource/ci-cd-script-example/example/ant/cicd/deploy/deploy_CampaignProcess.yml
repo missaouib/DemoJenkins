@@ -1,0 +1,29 @@
+- hosts: 10.60.108.51
+  remote_user: haipcc
+  tasks:
+  - name: backup file CampaignProcess
+    shell: |
+      cd /u01/haipcc/happycall/campaignProcess_AutoImpCus/lib
+      if [ -f "CampaignProcess.jar" ]; then mv CampaignProcess.jar CampaignProcess.jar_bk$(date +%Y%m%d%H%M%S); fi;
+  - name: Check proccess running
+    shell: |
+      cd /u01/haipcc/happycall/campaignProcess_AutoImpCus/bin
+      ./CampaignProcess.sh status | awk '{print $4}' | grep -o '[[:digit:]]*'
+    register: pid 
+  - name: kill process running
+    shell: |
+      kill -9 {{pid.stdout}}
+    when: pid.stdout != ""
+# ./CampaignProcess.sh status | awk '{print $4}' | grep -o '[[:digit:]]*' | xargs kill -9 
+  - name: Copy file to folder lib
+    copy:
+      src: ../../CampaignProcess/dist/CampaignProcess.jar
+      dest: /u01/haipcc/happycall/campaignProcess_AutoImpCus/lib/
+  # - name: rename file
+  #   shell: |
+  #     cd /u01/haipcc/happycall/campaignProcess_AutoImpCus/lib
+  #     mv {{artifactId}}-1.{{BUILD_NUMBER}}.jar CampaignProcess.jar
+  - name: start service 
+    shell: |
+      cd /u01/haipcc/happycall/campaignProcess_AutoImpCus/bin
+      ./CampaignProcess.sh start
